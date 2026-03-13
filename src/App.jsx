@@ -4,6 +4,7 @@ import { supabase } from "./lib/supabase";
 const CATEGORIES = ["Migración", "Impositivo", "Laboral", "Contactos", "General"];
 const CAT_COLORS = { "Migración": "#16a34a", "Impositivo": "#d97706", "Laboral": "#2563eb", "Contactos": "#7c3aed", "General": "#64748b" };
 const CAT_ICONS = { "Migración": "🛂", "Impositivo": "💰", "Laboral": "⚖️", "Contactos": "📞", "General": "📋" };
+const GLOBAL_COUNTRY = "🌐 Global / Multi-país";
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
@@ -101,7 +102,23 @@ export default function App() {
   function buildContext() {
     if (allCountries.length === 0) return "No hay información cargada en la base de conocimiento aún.";
     let ctx = "BASE DE CONOCIMIENTO — MOVILIDADES INTERNACIONALES:\n\n";
-    for (const country of allCountries) {
+    // Primero la info global/multi-país
+    if (db.countries[GLOBAL_COUNTRY]) {
+      ctx += `=== INFORMACIÓN GLOBAL / MULTI-PAÍS (aplica a todos los casos) ===\n`;
+      for (const cat of CATEGORIES) {
+        const ents = db.countries[GLOBAL_COUNTRY]?.[cat] || [];
+        if (ents.length > 0) {
+          ctx += `\n[${cat}]\n`;
+          ents.forEach(e => {
+            const expiry = e.expiryDate ? ` [Vigencia hasta: ${e.expiryDate}]` : "";
+            ctx += `• ${e.content}${expiry}\n  (Fuente: ${e.source || "manual"}, ${e.date})\n`;
+          });
+        }
+      }
+      ctx += "\n";
+    }
+    // Después la info por país
+    for (const country of allCountries.filter(c => c !== GLOBAL_COUNTRY)) {
       ctx += `=== ${country.toUpperCase()} ===\n`;
       for (const cat of CATEGORIES) {
         const ents = db.countries[country]?.[cat] || [];
@@ -421,7 +438,10 @@ Si falta información en algún área, indicalo claramente. Sé específico y pr
                 <div>
                   <label style={S.label}>País</label>
                   <input list="kb-country-list" value={addForm.country} onChange={e => setAddForm(f => ({ ...f, country: e.target.value }))} placeholder="Ej: Alemania" style={S.input} />
-                  <datalist id="kb-country-list">{allCountries.map(c => <option key={c} value={c} />)}</datalist>
+                  <datalist id="kb-country-list">
+                    <option value={GLOBAL_COUNTRY} />
+                    {allCountries.filter(c => c !== GLOBAL_COUNTRY).map(c => <option key={c} value={c} />)}
+                  </datalist>
                 </div>
                 <div>
                   <label style={S.label}>Categoría</label>
