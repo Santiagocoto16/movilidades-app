@@ -442,7 +442,7 @@ Si falta información en algún área, indicalo claramente. Sé específico y pr
                     <option value={GLOBAL_COUNTRY} />
                     {allCountries.filter(c => c !== GLOBAL_COUNTRY).map(c => <option key={c} value={c} />)}
                   </datalist>
-                  <button type="button" onClick={() => setAddForm(f => ({ ...f, country: GLOBAL_COUNTRY }))} style={{ marginTop: 6, background: addForm.country === GLOBAL_COUNTRY ? "#2a3550" : "transparent", border: "1px solid #2a2f3e", borderRadius: 6, padding: "3px 10px", color: "#7a8090", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>
+                  <button type="button" onClick={() => setAddForm(f => ({ ...f, country: GLOBAL_COUNTRY }))} style={{ marginTop: 6, background: addForm.country === GLOBAL_COUNTRY ? "#c8b88a" : "#2a3550", border: "1px solid #c8b88a55", borderRadius: 6, padding: "4px 12px", color: addForm.country === GLOBAL_COUNTRY ? "#0f1117" : "#c8b88a", fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: "bold" }}>
                     🌐 Global / Multi-país
                   </button>
                 </div>
