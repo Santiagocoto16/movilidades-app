@@ -157,7 +157,7 @@ export default function App() {
         })
       });
       const data = await res.json();
-      const reply = data.content?.[0]?.text || `Error: ${data.error?.message || data.error?.type || JSON.stringify(data)}`;
+      const reply = data.content?.[0]?.text || "No pude procesar la respuesta.";
       setMessages(prev => [...prev, { role: "assistant", text: reply }]);
       await supabase.from("chat_history").insert([{ type: "free", question: text, answer: reply }]);
       await loadHistoryFromDB();
