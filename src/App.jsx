@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
+import * as XLSX from "xlsx";
 
 const CATEGORIES = ["Migración", "Impositivo", "Laboral", "Contactos", "General"];
 const CAT_COLORS = { "Migración": "#16a34a", "Impositivo": "#d97706", "Laboral": "#2563eb", "Contactos": "#7c3aed", "General": "#64748b" };
@@ -246,7 +247,14 @@ Si falta información en algún área, indicalo claramente. Sé específico y pr
     setAddStatus("loading");
     try {
       let extractedText = "";
-      if (file.type === "application/pdf") {
+      if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: "array" });
+        extractedText = workbook.SheetNames.map(name => {
+          const sheet = workbook.Sheets[name];
+          return `[Hoja: ${name}]\n${XLSX.utils.sheet_to_csv(sheet)}`;
+        }).join("\n\n");
+      } else if (file.type === "application/pdf") {
         const b64 = await new Promise((res, rej) => {
           const r = new FileReader();
           r.onload = ev => res(ev.target.result.split(",")[1]);
@@ -465,7 +473,7 @@ Si falta información en algún área, indicalo claramente. Sé específico y pr
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 <button onClick={handleAddEntry} style={{ background: "#c8b88a", color: "#0f1117", border: "none", borderRadius: 8, padding: "9px 20px", fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "inherit" }}>Guardar texto</button>
                 <button onClick={() => fileInputRef.current?.click()} style={{ background: "#2a3550", color: "#c8b88a", border: "1px solid #3a4a6a", borderRadius: 8, padding: "9px 20px", fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>📎 Subir archivo</button>
-                <input ref={fileInputRef} type="file" accept=".txt,.pdf,.md,.csv" onChange={handleFile} style={{ display: "none" }} />
+                <input ref={fileInputRef} type="file" accept=".txt,.pdf,.md,.csv,.xlsx,.xls" onChange={handleFile} style={{ display: "none" }} />
                 {addStatus === "ok" && <span style={{ color: "#16a34a", fontSize: 13 }}>✅ Guardado</span>}
                 {addStatus === "error" && <span style={{ color: "#ef4444", fontSize: 13 }}>❌ Completá país y contenido</span>}
                 {addStatus === "loading" && <span style={{ color: "#c8b88a", fontSize: 13 }}>⏳ Procesando archivo...</span>}
